@@ -44,8 +44,21 @@ class CAT
 
         }
         //overload for just sidelengths
-        CAT (double ij, double jk, double ki, double a1, double a2, double a3): a_ij(a1), a_jk(a2), a_ki(a3)
+        CAT (double ij, double jk, double ki, double a1, double a2, double a3, bool normalize = false): a_ij(a1), a_jk(a2), a_ki(a3)
         {
+            i = vec2(0, 0);
+            j = vec2(ij, 0);
+            double angle = acos((-jk*jk + ki*ki + ij*ij)/(2*ki*ij));
+            k = vec2(ki * cos(angle), ki * sin(angle));
+
+            std::vector<double> temp = {ij, jk, ki};
+            double max_len = *std::max_element(temp.begin(), temp.end());
+            // rescale
+            j *= 125 / max_len;
+            k *= 125 / max_len;
+            i = vec2 (250, 250);
+            j += i;
+            k += i;
         }
         // overload for specifying coordinates
         CAT (double i1, double i2, double j1, double j2, double k1, double k2, double a1, double a2, double a3, bool normalize = false): a_ij(a1), a_jk(a2), a_ki(a3)
