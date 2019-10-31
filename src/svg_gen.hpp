@@ -1,4 +1,6 @@
 #include <fstream>
+#include <algorithm>
+#include <vector>
 #include <string>
 #include <sstream>
 #include "glm/vec2.hpp"
@@ -43,15 +45,30 @@ class CAT
         }
         //overload for just sidelengths
         CAT (double ij, double jk, double ki, double a1, double a2, double a3): a_ij(a1), a_jk(a2), a_ki(a3)
-    {
-    }
+        {
+        }
         // overload for specifying coordinates
-        CAT (double i1, double i2, double j1, double j2, double k1, double k2, double a1, double a2, double a3): a_ij(a1), a_jk(a2), a_ki(a3)
-    {
-        i = vec2(i1, i2);
-        j = vec2(j1, j2);
-        k = vec2(k1, k2);
-    }
+        CAT (double i1, double i2, double j1, double j2, double k1, double k2, double a1, double a2, double a3, bool normalize = false): a_ij(a1), a_jk(a2), a_ki(a3)
+        {
+            i = vec2(i1, i2);
+            j = vec2(j1, j2);
+            k = vec2(k1, k2);
+
+            if (normalize)
+            {
+                std::vector<double> temp = {i1, i2, j1, j2, k1, k2};
+                double max_coord = *std::max_element(temp.begin(), temp.end());
+                // move
+                j -= i;
+                k -= i;
+                // rescale
+                j *= 125 / max_coord;
+                k *= 125 / max_coord;
+                i = vec2 (250, 250);
+                j += i;
+                k += i;
+            }
+        }
         void to_svg(string filename)
         {
             std::ofstream f (filename, std::ofstream::out);
