@@ -21,7 +21,7 @@ class CAT
             std::stringstream ss;
             ss << "<?xml version=\"1.0\" standalone=\"no\" ?>" << endl
                 << "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">" << endl
-                << "<svg width=\"500\" height=\"500\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" >" << endl;
+                << "<svg width=\"" + std::to_string(dims) + "\" height=\"" + std::to_string(dims) + "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" >" << endl;
             /*
                ss  << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>" << endl
                << "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.0//EN\"" << endl
@@ -44,12 +44,20 @@ class CAT
 
         }
         //overload for just sidelengths
-        CAT (double ij, double jk, double ki, double a1, double a2, double a3, bool normalize = false): a_ij(a1), a_jk(a2), a_ki(a3)
+        CAT (double ij, double jk, double ki, double a1, double a2, double a3): a_ij(a1), a_jk(a2), a_ki(a3)
         {
             i = vec2(0, 0);
             j = vec2(ij, 0);
             double angle = acos((-jk*jk + ki*ki + ij*ij)/(2*ki*ij));
             k = vec2(ki * cos(angle), ki * sin(angle));
+            std::vector<double> temp = {ij, jk, ki};
+            double max_len = *std::max_element(temp.begin(), temp.end());
+            dims = (max_len) * 3;
+            i = vec2 (dims/4, dims/4);
+            j += i;
+            k += i;
+
+            /*
             if (normalize)
             {
                 std::vector<double> temp = {ij, jk, ki};
@@ -61,6 +69,7 @@ class CAT
                 j += i;
                 k += i;
             }
+            */
         }
         // overload for specifying coordinates
         CAT (double i1, double i2, double j1, double j2, double k1, double k2, double a1, double a2, double a3, bool normalize = false): a_ij(a1), a_jk(a2), a_ki(a3)
@@ -69,8 +78,20 @@ class CAT
             j = vec2(j1, j2);
             k = vec2(k1, k2);
 
+            std::vector<double> temp = {i1, i2, j1, j2, k1, k2};
+            double max_coord = *std::max_element(temp.begin(), temp.end());
+            double min_coord = *std::min_element(temp.begin(), temp.end());
+            dims = (max_coord - min_coord) * 3;
+            j -= i;
+            k -= i;
+            i = vec2 (dims/4, dims/4);
+            j += i;
+            k += i;
+
+            /*
             if (normalize)
             {
+                dims = 500;
                 std::vector<double> temp = {i1, i2, j1, j2, k1, k2};
                 double max_coord = *std::max_element(temp.begin(), temp.end());
                 // move
@@ -83,6 +104,7 @@ class CAT
                 j += i;
                 k += i;
             }
+            */
         }
         void to_svg(string filename)
         {
@@ -93,6 +115,7 @@ class CAT
         }
 
     private:
+        int dims;
         string to_arc(vec2 a, vec2 b, double angle)
         {
             double radius = glm::distance(a, b) / (2 * angle);

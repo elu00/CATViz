@@ -6,6 +6,18 @@ using std::cin;
 
 int main()
 {
+    /*
+    double i, j, k, a, b, c;
+    string filename;
+    cout << "Enter i" << endl;
+    cin >> i;
+    cout << "Enter j" << endl;
+    cin >> j;
+    cout << "Enter k" << endl;
+    cin >> k;
+    CAT triangle = CAT(i, j, k, a, b, c, true);
+    cout << i << endl << j << endl << k << endl << a << endl << b << endl << c << endl;
+    */
     double i1, i2, j1, j2, k1, k2, a, b, c;
     string filename;
     cout << "Enter i1" << endl;
@@ -24,6 +36,7 @@ int main()
         << "(" << i1 << "," << i2 << ")"
         << "(" << j1 << "," << j2 << ")"
         << "(" << k1 << "," << k2 << ")" << endl;
+
     cout << "Enter alpha" << endl;
     cin >> a;
     cout << "Enter beta" << endl;
@@ -32,7 +45,7 @@ int main()
     cin >> c;
     cout << "Enter filename" << endl;
     cin >> filename;
-    CAT triangle = CAT(i1, i2, j1, j2, k1, k2, a, b, c);
+    CAT triangle = CAT(i1, i2, j1, j2, k1, k2, a, b, c, true);
     triangle.to_svg(filename);
     return 1;
 }
