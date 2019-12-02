@@ -3,8 +3,9 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtx/norm.hpp"
-
-const double PI = 3.1415926535897932384626433832795;
+#ifndef PI
+#define PI 3.1415926535897932384626433832795
+#endif
 const double PI_2 = 1.57079632679489661923;
 const double PI_4 = 0.785398163397448309616;
 
