@@ -1,5 +1,5 @@
 #include <iostream>
-#include "svg_gen.hpp"
+#include "util.cpp"
 
 using std::cout;
 using std::cin;
