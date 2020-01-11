@@ -1,10 +1,10 @@
 #include <iostream>
 #include "util.cpp"
+#include "glm/gtx/string_cast.hpp"
 
 using std::cout;
 using std::cin;
-
-int main()
+void SVGTests()
 {
     /*
     double i, j, k, a, b, c;
@@ -47,5 +47,19 @@ int main()
     cin >> filename;
     CAT triangle = CAT(i1, i2, j1, j2, k1, k2, a, b, c, true);
     triangle.to_svg(filename);
-    return 1;
+    return;
 }
+void BaryTests() {
+    cout << angle(vec2(0.5,0.5), vec2(0.5, 0));
+    cout << l2DistSquared(5, 5 * sqrt(2), 5, 0, 0, 0, 0, 0, 0, 0, 1, 0) << endl;
+    cout << l2DistSquared(5, 5 * sqrt(2), 5, 0, 0, 0, 0, 0, 0, 0, 0.5, 0) << endl;
+    cout << l2DistSquared(5, 5 * sqrt(2), 5, 0, 0, 0, 0, 0, 0, 0, 0, 0.5) << endl;
+    cout << to_string(vec2(0,0));
+}
+int main()
+{
+    //BaryTests();
+    return 0;
+}
+
+

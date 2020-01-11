@@ -7,6 +7,7 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtx/norm.hpp"
+#include "glm/gtx/string_cast.hpp"
 #ifndef PI
 #define PI 3.1415926535897932384626433832795
 #endif
@@ -22,6 +23,7 @@ using std::vector;
 using std::string;
 using std::endl;
 using std::abs;
+using std::cout;
 
 double angle(vec2 v1, vec2 v2) 
 {
@@ -313,6 +315,8 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
     double alpha = angle(j - i, k - i) + a_ij + a_ki;
     double beta = angle(i - j, k - j) + a_ij + a_jk;
     double gamma = angle(i - k, j - k) + a_ki + a_jk;
+    // DEBUG 
+    cout << "expected area ratios: " << i_b << "," << j_b << "," << k_b << endl;
     if (a_ij + a_jk + a_ki == 0.)
     {
         // Euclidean case
@@ -322,6 +326,10 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         double t_j = beta;
         tj = vec2(cos(t_i) + sin(t_i) / tan(t_j), 0.);
         tk = vec2(cos(t_i), sin(t_i));
+        // DEBUG
+        vec2 p = i_b * ti + j_b * tj + k_b * tk;
+        cout << "actual area ratios (E2): " << to_string(BaryCalc(p, E2Triangle{ti, tj, tk})) << endl;
+        //
         MobiusInfo M = SolveTrans(ti, tj, tk, i, j, k);
         return ForwardMobius(i_b * ti + j_b * tj + k_b * tk, M);
     }
@@ -344,6 +352,10 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         MobiusInfo M = SolveTrans(ForwardSphericalProj(ti), ForwardSphericalProj(tj), ForwardSphericalProj(tk), i, j, k);
         vec3 coord = i_b * ti + j_b * tj + k_b * tk;
         coord = coord/l2Norm(coord);
+        // DEBUG
+        cout << "actual area ratios (S2): " << to_string(SphericalBary(coord, S2Triangle{ti, tj, tk})) << endl;
+        //
+
         return ForwardMobius(ForwardSphericalProj(coord), M);
     }
     else
@@ -366,6 +378,10 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         MobiusInfo M = SolveTrans(ForwardHyperbolicProj(ti), ForwardHyperbolicProj(tj), ForwardHyperbolicProj(tk), i, j, k);
         vec3 coord = i_b * ti + j_b * tj + k_b * tk;
         coord = -coord/(coord.x * coord.x + coord.y * coord.y - coord.z * coord.z);
+        // DEBUG
+        cout << "actual area ratios (H2): " << to_string(HyperbolicBary(coord, H2Triangle{ti, tj, tk})) << endl;
+        //
+
         return ForwardMobius(ForwardHyperbolicProj(coord), M);
     }
 
@@ -378,7 +394,7 @@ double l2DistSquared(double ij, double jk, double ki, double a_ij, double a_jk, 
     vec2 k = vec2(ki * cos(angle), ki * sin(angle));
     vec2 p1 = baryToPlane (i, j, k, a_ij, a_jk, a_ki, i1, j1, k1);
     vec2 p2 = baryToPlane (i, j, k, a_ij, a_jk, a_ki, i2, j2, k2);
-    return ((p1-p2).x)*((p1-p2).x) + ((p1-p2).y)*((p1-p2).y);
+    return distance2(p1,p2);
 }
 
 
