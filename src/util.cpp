@@ -291,10 +291,21 @@ vec3 BaryCalc(vec2 p, E2Triangle T)
     v = (d11 * d20 - d01 * d21) / denom;
     w = (d00 * d21 - d01 * d20) / denom;
     u = 1.f - v - w;
+    /*
     if (u < 0. || v < 0. || w < 0.)
     {
+        // DEBUG
+        cout << "Something bad happened" << endl;
+        cout << u << endl;
+        cout << v << endl;
+        cout << w << endl;
+        cout << to_string(T.i) << endl;
+        cout << to_string(T.j) << endl;
+        cout << to_string(T.k) << endl;
+        cout << to_string(p) << endl;
         return vec3(1., 1., 1.);
     }
+    */
     return vec3(u, v, w);
 }
 
@@ -316,7 +327,7 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
     double beta = angle(i - j, k - j) + a_ij + a_jk;
     double gamma = angle(i - k, j - k) + a_ki + a_jk;
     // DEBUG 
-    cout << "expected area ratios: " << i_b << "," << j_b << "," << k_b << endl;
+    //cout << endl << "expected area ratios: " << endl << i_b << "," << j_b << "," << k_b << endl;
     if (a_ij + a_jk + a_ki == 0.)
     {
         // Euclidean case
@@ -328,7 +339,8 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         tk = vec2(cos(t_i), sin(t_i));
         // DEBUG
         vec2 p = i_b * ti + j_b * tj + k_b * tk;
-        cout << "actual area ratios (E2): " << to_string(BaryCalc(p, E2Triangle{ti, tj, tk})) << endl;
+        //cout << "actual area ratios (E2): " << endl << 
+        string temp = glm::to_string(BaryCalc(p, E2Triangle{ti, tj, tk}));// << endl;
         //
         MobiusInfo M = SolveTrans(ti, tj, tk, i, j, k);
         return ForwardMobius(i_b * ti + j_b * tj + k_b * tk, M);
@@ -353,7 +365,7 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         vec3 coord = i_b * ti + j_b * tj + k_b * tk;
         coord = coord/l2Norm(coord);
         // DEBUG
-        cout << "actual area ratios (S2): " << to_string(SphericalBary(coord, S2Triangle{ti, tj, tk})) << endl;
+        cout << "actual area ratios (S2): " << endl << glm::to_string(SphericalBary(coord, S2Triangle{ti, tj, tk, SphericalArea(ti,tj,tk)})) << endl;
         //
 
         return ForwardMobius(ForwardSphericalProj(coord), M);
@@ -379,21 +391,36 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         vec3 coord = i_b * ti + j_b * tj + k_b * tk;
         coord = -coord/(coord.x * coord.x + coord.y * coord.y - coord.z * coord.z);
         // DEBUG
-        cout << "actual area ratios (H2): " << to_string(HyperbolicBary(coord, H2Triangle{ti, tj, tk})) << endl;
+        cout << "actual area ratios (H2): " << endl << glm::to_string(HyperbolicBary(coord, H2Triangle{ti, tj, tk, HyperbolicArea(ti,tj,tk)})) << endl;
         //
 
         return ForwardMobius(ForwardHyperbolicProj(coord), M);
     }
 
 }
-double l2DistSquared(double ij, double jk, double ki, double a_ij, double a_jk, double a_ki, double i1, double j1, double k1, double i2, double k2, double j2)
+double l2DistSquared(double ij, double jk, double ki, double a_ij, double a_jk, double a_ki, float i1, float j1, float k1, float i2, float j2, float k2)
 {
     vec2 i = vec2(0, 0);
     vec2 j = vec2(ij, 0);
     double angle = acos((-jk*jk + ki*ki + ij*ij)/(2*ki*ij));
     vec2 k = vec2(ki * cos(angle), ki * sin(angle));
+    // DEBUG
     vec2 p1 = baryToPlane (i, j, k, a_ij, a_jk, a_ki, i1, j1, k1);
+    //if ( abs(distance(p1, i1 * i + j1 * j + k1 * k) ) > 1e-5 ) cout << "BARY BAD";
     vec2 p2 = baryToPlane (i, j, k, a_ij, a_jk, a_ki, i2, j2, k2);
+    //if ( abs(distance(p2, i2 * i + j2 * j + k2 * k) ) > 1e-5 ) cout << "BARY BAD";
+    /*
+    if (distance(p1, p2) > sqrt(2)/8) {
+        cout << distance(p1, p2) << endl;
+        cout << "BAD BARY STUFF:" << endl;
+        cout << i1 << endl;
+        cout << j1 << endl;
+        cout << k1 << endl;
+        cout << i2 << endl;
+        cout << j2 << endl;
+        cout << k2 << endl;
+    }
+    */
     return distance2(p1,p2);
 }
 
