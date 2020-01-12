@@ -404,23 +404,8 @@ double l2DistSquared(double ij, double jk, double ki, double a_ij, double a_jk, 
     vec2 j = vec2(ij, 0);
     double angle = acos((-jk*jk + ki*ki + ij*ij)/(2*ki*ij));
     vec2 k = vec2(ki * cos(angle), ki * sin(angle));
-    // DEBUG
     vec2 p1 = baryToPlane (i, j, k, a_ij, a_jk, a_ki, i1, j1, k1);
-    //if ( abs(distance(p1, i1 * i + j1 * j + k1 * k) ) > 1e-5 ) cout << "BARY BAD";
     vec2 p2 = baryToPlane (i, j, k, a_ij, a_jk, a_ki, i2, j2, k2);
-    //if ( abs(distance(p2, i2 * i + j2 * j + k2 * k) ) > 1e-5 ) cout << "BARY BAD";
-    /*
-    if (distance(p1, p2) > sqrt(2)/8) {
-        cout << distance(p1, p2) << endl;
-        cout << "BAD BARY STUFF:" << endl;
-        cout << i1 << endl;
-        cout << j1 << endl;
-        cout << k1 << endl;
-        cout << i2 << endl;
-        cout << j2 << endl;
-        cout << k2 << endl;
-    }
-    */
     return distance2(p1,p2);
 }
 

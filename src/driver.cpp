@@ -50,7 +50,6 @@ void SVGTests()
     return;
 }
 void BaryTests() {
-    cout << angle(vec2(0.5,0.5), vec2(0.5, 0));
     cout << l2DistSquared(5, 5 * sqrt(2), 5, 0, 0, 0, 0, 0, 0, 0, 1, 0) << endl;
     cout << l2DistSquared(5, 5 * sqrt(2), 5, 0, 0, 0, 0, 0, 0, 0, 0.5, 0) << endl;
     cout << l2DistSquared(5, 5 * sqrt(2), 5, 0, 0, 0, 0, 0, 0, 0, 0, 0.5) << endl;
