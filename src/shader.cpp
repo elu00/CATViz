@@ -226,6 +226,7 @@ void mainImage(vec4 fragColor, vec2 fragCoord)
         vec3 ti, tj, tk;
         
         // law of cosines stuff to find side lenghts
+        // Variables below are actually cosh of  what they say they are
         // a = length of jk, b = length of ik, c = length of ij
         float a = (cos(alpha) + cos(gamma) * cos(beta)) / (sin(gamma) * sin(beta));
         float b = (cos(beta) + cos(alpha) * cos(gamma)) / (sin(alpha) * sin(gamma));

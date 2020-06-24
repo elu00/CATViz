@@ -375,7 +375,7 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         // hyperbolic case
         vec3 ti, tj, tk;
         // law of cosines stuff to find side lenghts
-        // a = length of jk, b = length of ik, c = length of ij
+        // a = cosh of length of jk, b = cosh of length of ik, c = cosh of length of ij
         double a = (cos(alpha) + cos(gamma) * cos(beta)) / (sin(gamma) * sin(beta));
         double b = (cos(beta) + cos(alpha) * cos(gamma)) / (sin(alpha) * sin(gamma));
         double c = (cos(gamma) + cos(alpha) * cos(beta)) / (sin(alpha) * sin(beta));
@@ -389,9 +389,9 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         tk = vec3(tk1, tk2, b);
         MobiusInfo M = SolveTrans(ForwardHyperbolicProj(ti), ForwardHyperbolicProj(tj), ForwardHyperbolicProj(tk), i, j, k);
         vec3 coord = i_b * ti + j_b * tj + k_b * tk;
-        coord = -coord/(coord.x * coord.x + coord.y * coord.y - coord.z * coord.z);
+        coord = -coord/sqrt(coord.x * coord.x + coord.y * coord.y - coord.z * coord.z);
         // DEBUG
-        cout << "actual area ratios (H2): " << endl << glm::to_string(HyperbolicBary(coord, H2Triangle{ti, tj, tk, HyperbolicArea(ti,tj,tk)})) << endl;
+        //cout << "actual area ratios (H2): " << endl << glm::to_string(HyperbolicBary(coord, H2Triangle{ti, tj, tk, HyperbolicArea(ti,tj,tk)})) << endl;
         //
 
         return ForwardMobius(ForwardHyperbolicProj(coord), M);

@@ -50,14 +50,14 @@ void SVGTests()
     return;
 }
 void BaryTests() {
-    cout << l2DistSquared(5, 5 * sqrt(2), 5, 0, 0, 0, 0, 0, 0, 0, 1, 0) << endl;
-    cout << l2DistSquared(5, 5 * sqrt(2), 5, 0, 0, 0, 0, 0, 0, 0, 0.5, 0) << endl;
-    cout << l2DistSquared(5, 5 * sqrt(2), 5, 0, 0, 0, 0, 0, 0, 0, 0, 0.5) << endl;
-    cout << to_string(vec2(0,0));
+    assert(abs(l2DistSquared(5, 5 * sqrt(2), 5, 0, 0, 0, 1, 0, 0, 0, 1, 0) - 25.0) < 1e-8);
+    assert(abs(l2DistSquared(5, 5 * sqrt(2), 5, 0, 0, 0, 0, 1, 0, 0.5, 0.5, 0) - 6.25) < 1e-8);
+    cout << l2DistSquared(5, 5 * sqrt(2), 5, -1e-2, -1e-2, -1e-2, 0.3, 0.7, 0, 0.3, 0.2, 0.5) << endl;
+    cout << l2DistSquared(5 * sqrt(2), 5, 5, -1e-2, -1e-2, -1e-2, 0.7, 0, 0.3, 0.2, 0.5, 0.3) << endl;
 }
 int main()
 {
-    //BaryTests();
+    BaryTests();
     return 0;
 }
 
