@@ -352,10 +352,15 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         ti = vec3(0., 0., -1.);
    
         // law of cosines stuff to find side lenghts
-        // a = length of jk, b = length of ik, c = length of ik
+        // a = cosine of length of jk, b = same for ik, c = same for ij
         double a = (cos(alpha) + cos(gamma) * cos(beta)) / (sin(gamma) * sin(beta));
         double b = (cos(beta) + cos(alpha) * cos(gamma)) / (sin(alpha) * sin(gamma));
         double c = (cos(gamma) + cos(alpha) * cos(beta)) / (sin(alpha) * sin(beta));
+        cout << "hmm" << endl;
+        cout << alpha << endl;
+        cout << beta << endl;
+        cout << gamma << endl;
+        cout << c << endl;
         double tj1 = sqrt(1. - c * c);
         tj = vec3(tj1, 0., -c);
         double tk1 = (a - b * c) / tj1;
@@ -364,8 +369,15 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         MobiusInfo M = SolveTrans(ForwardSphericalProj(ti), ForwardSphericalProj(tj), ForwardSphericalProj(tk), i, j, k);
         vec3 coord = i_b * ti + j_b * tj + k_b * tk;
         coord = coord/l2Norm(coord);
+        cout << "vertex stuff i:" << glm::to_string((ti)) << endl;
+        cout << "vertex stuff j:" << glm::to_string((tj)) << endl;
+        cout << "vertex stuff k:" << glm::to_string((tk)) << endl;
+        cout << "coords" << glm::to_string((coord)) << endl;
+        //cout << "vertex stuff p:" << glm::to_string((coord)) << endl;
+        //
+
         // DEBUG
-        cout << "actual area ratios (S2): " << endl << glm::to_string(SphericalBary(coord, S2Triangle{ti, tj, tk, SphericalArea(ti,tj,tk)})) << endl;
+        //cout << "actual area ratios (S2): " << endl << glm::to_string(SphericalBary(coord, S2Triangle{ti, tj, tk, SphericalArea(ti,tj,tk)})) << endl;
         //
 
         return ForwardMobius(ForwardSphericalProj(coord), M);
@@ -384,15 +396,16 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         double tk1 = (-a + b * c) / tj1;
         double tk2 = sqrt(-1. - tk1 * tk1 + b * b);
         
+
         ti = vec3(0., 0., 1.);
         tj = vec3(tj1, 0., c);
         tk = vec3(tk1, tk2, b);
         MobiusInfo M = SolveTrans(ForwardHyperbolicProj(ti), ForwardHyperbolicProj(tj), ForwardHyperbolicProj(tk), i, j, k);
         vec3 coord = i_b * ti + j_b * tj + k_b * tk;
-        coord = -coord/sqrt(coord.x * coord.x + coord.y * coord.y - coord.z * coord.z);
+        cout << "coords" << glm::to_string((coord)) << endl;
+        coord = coord/(float)sqrt(-coord.x * coord.x - coord.y * coord.y + coord.z * coord.z);
         // DEBUG
         //cout << "actual area ratios (H2): " << endl << glm::to_string(HyperbolicBary(coord, H2Triangle{ti, tj, tk, HyperbolicArea(ti,tj,tk)})) << endl;
-        //
 
         return ForwardMobius(ForwardHyperbolicProj(coord), M);
     }
@@ -404,8 +417,13 @@ double l2DistSquared(double ij, double jk, double ki, double a_ij, double a_jk, 
     vec2 j = vec2(ij, 0);
     double angle = acos((-jk*jk + ki*ki + ij*ij)/(2*ki*ij));
     vec2 k = vec2(ki * cos(angle), ki * sin(angle));
+    cout << "i:" << endl << glm::to_string(i) << endl;
+    cout << "j:" << endl << glm::to_string(j) << endl;
+    cout << "k:" << endl << glm::to_string(k) << endl;
     vec2 p1 = baryToPlane (i, j, k, a_ij, a_jk, a_ki, i1, j1, k1);
     vec2 p2 = baryToPlane (i, j, k, a_ij, a_jk, a_ki, i2, j2, k2);
+    cout << "p1:" << endl << glm::to_string(p1) << endl;
+    cout << "p2:" << endl << glm::to_string(p2) << endl;
     return distance2(p1,p2);
 }
 
