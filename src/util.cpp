@@ -25,45 +25,36 @@ using std::endl;
 using std::abs;
 using std::cout;
 
-double angle(vec2 v1, vec2 v2) 
-{
+double angle(vec2 v1, vec2 v2) {
     return acos(dot(normalize(v1), normalize(v2)));
 }
-vec2 prod(vec2 a, vec2 b)
-{
+vec2 prod(vec2 a, vec2 b) {
     return vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x);
 }
-vec2 div(vec2 a, vec2 b)
-{
+vec2 div(vec2 a, vec2 b) {
     return vec2(((a.x*b.x+a.y*b.y)/(b.x*b.x+b.y*b.y)),((a.y*b.x-a.x*b.y)/(b.x*b.x+b.y*b.y)));
 }
-double sc(double c) 
-{
+double sc(double c)  {
     return sqrt(c * c - 1.);
 }
 
-struct S2Triangle
-{
+struct S2Triangle {
     vec3 i, j, k;
     double area;
 };
-struct H2Triangle
-{
+struct H2Triangle {
     vec3 i, j, k;
     double area;
 };
 
-struct E2Triangle
-{
+struct E2Triangle {
     vec2 i, j, k;
 };
-class CAT
-{
+class CAT {
     public:
         vec2 i, j, k;
         double a_ij, a_jk, a_ki;
-        string to_string()
-        {
+        string to_string() {
             // header
             std::stringstream ss;
             ss << "<?xml version=\"1.0\" standalone=\"no\" ?>" << endl
@@ -91,8 +82,7 @@ class CAT
 
         }
         //overload for just sidelengths
-        CAT (double ij, double jk, double ki, double a1, double a2, double a3): a_ij(a1), a_jk(a2), a_ki(a3)
-        {
+        CAT (double ij, double jk, double ki, double a1, double a2, double a3): a_ij(a1), a_jk(a2), a_ki(a3) {
             i = vec2(0, 0);
             j = vec2(ij, 0);
             double angle = acos((-jk*jk + ki*ki + ij*ij)/(2*ki*ij));
@@ -119,8 +109,7 @@ class CAT
             */
         }
         // overload for specifying coordinates
-        CAT (double i1, double i2, double j1, double j2, double k1, double k2, double a1, double a2, double a3, bool normalize = false): a_ij(a1), a_jk(a2), a_ki(a3)
-        {
+        CAT (double i1, double i2, double j1, double j2, double k1, double k2, double a1, double a2, double a3, bool normalize = false): a_ij(a1), a_jk(a2), a_ki(a3) {
             i = vec2(i1, i2);
             j = vec2(j1, j2);
             k = vec2(k1, k2);
@@ -153,8 +142,7 @@ class CAT
             }
             */
         }
-        void to_svg(string filename)
-        {
+        void to_svg(string filename) {
             std::ofstream f (filename, std::ofstream::out);
             f << to_string();
             f.close();
@@ -163,8 +151,7 @@ class CAT
 
     private:
         int dims;
-        string to_arc(vec2 a, vec2 b, double angle)
-        {
+        string to_arc(vec2 a, vec2 b, double angle) {
             double radius = glm::distance(a, b) / (2 * angle);
             string largeArcFlag = std::abs(2*angle) <= 3.14159265358979323846264 ? "0" : "1";
             // sweep flag is 0 if going outward, 1 if going inward
@@ -177,8 +164,7 @@ class CAT
             return ss.str();
 
         }
-        vec2 center(vec2 a, vec2 b, double angle)
-        {
+        vec2 center(vec2 a, vec2 b, double angle) {
             // |b-a| = 2 alpha r, so radius = |b-a| / 2aalpha
             double radius = glm::distance(a, b) / (2 * angle);
             vec2 diff = b - a;
@@ -198,42 +184,34 @@ class CAT
 };
 
 
-struct MobiusInfo
-{
+struct MobiusInfo {
     vec2 a, b, c, d;
 };
 
-vec2 ForwardMobius(vec2 z, MobiusInfo m)
-{
+vec2 ForwardMobius(vec2 z, MobiusInfo m) {
     return div((prod(m.a, z) + m.b), (prod(m.c, z) + m.d));
 }
 
-vec2 InvMobius(vec2 z, MobiusInfo m)
-{
+vec2 InvMobius(vec2 z, MobiusInfo m) {
     return div((prod(m.d, z) - m.b), (-prod(m.c, z) + m.a));
 }
 
-vec2 ComplexDet(vec2 a, vec2 b, vec2 c, vec2 d, vec2 e, vec2 f, vec2 g, vec2 h, vec2 i)
-{
+vec2 ComplexDet(vec2 a, vec2 b, vec2 c, vec2 d, vec2 e, vec2 f, vec2 g, vec2 h, vec2 i) {
     return prod(a, (prod(e, i) - prod(f, h))) - prod(b, (prod(d, i) - prod(f, g))) + prod(c, (prod(d, h) - prod(e, g)));
 }
 
-vec2 ForwardSphericalProj(vec3 wh)
-{
+vec2 ForwardSphericalProj(vec3 wh) {
     return vec2(wh.x / (1. - wh.z), wh.y / (1. - wh.z));
 }
-vec3 InverseSphericalProj(vec2 z)
-{
+vec3 InverseSphericalProj(vec2 z) {
     //GLM PORT
     return vec3((2.f * z)/ (1.f + dot(z, z)), (-1.f + dot(z, z)) / (1.f + dot(z, z)));
 }
 
-double SphericalArea(vec3 A, vec3 B, vec3 C)
-{
+double SphericalArea(vec3 A, vec3 B, vec3 C) {
     return 2.*atan((dot(A,cross(B, C)))/(1. + dot(A, B) + dot(B, C) + dot(A,C)));
 }
-vec3 SphericalBary(vec3 p, S2Triangle T)
-{
+vec3 SphericalBary(vec3 p, S2Triangle T) {
     double u = abs(SphericalArea(T.j, T.k, p) / T.area);
     double v = abs(SphericalArea(T.i, T.k, p) / T.area);
     double w = abs(SphericalArea(T.i, T.j, p) / T.area);
@@ -243,21 +221,17 @@ vec3 SphericalBary(vec3 p, S2Triangle T)
     }
     return vec3(u, v, w);
 }
-vec2 ForwardHyperbolicProj(vec3 wh)
-{
+vec2 ForwardHyperbolicProj(vec3 wh) {
     return vec2(wh.x / (1. + wh.z), wh.y / (1. + wh.z));
 }
-vec3 InverseHyperbolicProj(vec2 z)
-{
+vec3 InverseHyperbolicProj(vec2 z) {
     return vec3(2.f * z / (1.f - dot(z, z)),(1.f + dot(z, z)) / (1.f - dot(z, z)));
 }
-double HDist(vec3 i, vec3 j)
-{
+double HDist(vec3 i, vec3 j) {
     return ((i.x * j.x + i.y * j.y) - i.z * j.z);
 }
 
-double HyperbolicArea(vec3 A, vec3 B, vec3 C)
-{
+double HyperbolicArea(vec3 A, vec3 B, vec3 C) {
     double cosha = -HDist(B, C);
     double coshb = -HDist(A, C);
     double coshc = -HDist(B, A);
@@ -266,8 +240,7 @@ double HyperbolicArea(vec3 A, vec3 B, vec3 C)
     double gamma = acos((-coshc + coshb * cosha) / (sc(coshb) * sc(cosha)));
     return PI - alpha - beta - gamma;
 }
-vec3 HyperbolicBary(vec3 p, H2Triangle T)
-{
+vec3 HyperbolicBary(vec3 p, H2Triangle T) {
     double u = HyperbolicArea(T.j, T.k, p) / T.area;
     double v = HyperbolicArea(T.i, T.k, p) / T.area;
     double w = HyperbolicArea(T.i, T.j, p) / T.area;
@@ -278,8 +251,7 @@ vec3 HyperbolicBary(vec3 p, H2Triangle T)
     return vec3(u, v, w);
 }
 
-vec3 BaryCalc(vec2 p, E2Triangle T)
-{
+vec3 BaryCalc(vec2 p, E2Triangle T) {
     double u, v, w;
     vec2 v0 = T.j - T.i, v1 = T.k - T.i, v2 = p - T.i;
     double d00 = dot(v0, v0);
@@ -309,8 +281,7 @@ vec3 BaryCalc(vec2 p, E2Triangle T)
     return vec3(u, v, w);
 }
 
-MobiusInfo SolveTrans(vec2 z1, vec2 z2, vec2 z3, vec2 w1, vec2 w2, vec2 w3)
-{
+MobiusInfo SolveTrans(vec2 z1, vec2 z2, vec2 z3, vec2 w1, vec2 w2, vec2 w3) {
     vec2 z1w1 = prod(z1, w1);
     vec2 z2w2 = prod(z2, w2);
     vec2 z3w3 = prod(z3, w3);
@@ -321,15 +292,13 @@ MobiusInfo SolveTrans(vec2 z1, vec2 z2, vec2 z3, vec2 w1, vec2 w2, vec2 w3)
     return MobiusInfo{a, b, c, d};
 }
 
-vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki, float i_b, float j_b, float k_b)
-{
+vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki, float i_b, float j_b, float k_b) {
     double alpha = angle(j - i, k - i) + a_ij + a_ki;
     double beta = angle(i - j, k - j) + a_ij + a_jk;
     double gamma = angle(i - k, j - k) + a_ki + a_jk;
     // DEBUG 
     //cout << endl << "expected area ratios: " << endl << i_b << "," << j_b << "," << k_b << endl;
-    if (a_ij + a_jk + a_ki == 0.)
-    {
+    if (a_ij + a_jk + a_ki == 0.) {
         // Euclidean case
         vec2 ti, tj, tk;
         ti = vec2(0., 0.);
@@ -344,9 +313,7 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         //
         MobiusInfo M = SolveTrans(ti, tj, tk, i, j, k);
         return ForwardMobius(i_b * ti + j_b * tj + k_b * tk, M);
-    }
-    else if (a_ij + a_jk + a_ki > 0.)
-    {
+    } else if (a_ij + a_jk + a_ki > 0.) {
         // spherical case
         vec3 ti, tj, tk;
         ti = vec3(0., 0., -1.);
@@ -364,8 +331,6 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         cout << gamma << endl;
         cout << c << endl;
         */
-
-
         double tj1 = sqrt(1. - c * c);
         tj = vec3(tj1, 0., -c);
         double tk1 = (a - b * c) / tj1;
@@ -391,9 +356,7 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
         //
 
         return ForwardMobius(ForwardSphericalProj(coord), M);
-    }
-    else
-    {
+    } else {
         // hyperbolic case
         vec3 ti, tj, tk;
         // law of cosines stuff to find side lenghts
@@ -420,8 +383,7 @@ vec2 baryToPlane (vec2 i, vec2 j, vec2 k, double a_ij, double a_jk, double a_ki,
     }
 
 }
-double l2DistSquared(double ij, double jk, double ki, double a_ij, double a_jk, double a_ki, float i1, float j1, float k1, float i2, float j2, float k2)
-{
+double l2DistSquared(double ij, double jk, double ki, double a_ij, double a_jk, double a_ki, float i1, float j1, float k1, float i2, float j2, float k2) {
     vec2 i = vec2(0, 0);
     vec2 j = vec2(ij, 0);
     double angle = acos((-jk*jk + ki*ki + ij*ij)/(2*ki*ij));
