@@ -16,7 +16,7 @@ include_directories(
 link_directories(
     )
 
-add_executable(cviz src/driver.cpp)
+add_executable(cviz src/triangle.c src/driver.cpp)
 if (MSVC)
     set_directory_properties(PROPERTIES 
         COMPILE_DEFINITIONS _VARIADIC_MAX=10

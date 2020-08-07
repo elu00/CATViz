@@ -4,10 +4,12 @@
 #include <cmath>
 #include <sstream>
 #include <algorithm>
+#include <tuple>
 
 #include "glm/glm.hpp"
 #include "glm/gtx/norm.hpp"
 #include "glm/gtx/string_cast.hpp"
+#include "triangle.h"
 #ifndef PI
 #define PI 3.1415926535897932384626433832795
 #endif
@@ -24,6 +26,13 @@ using std::string;
 using std::endl;
 using std::abs;
 using std::cout;
+
+// Triangle Stuff
+extern "C" {
+    void triangulate(char *, struct triangulateio *, struct triangulateio *,
+                 struct triangulateio *);
+    void trifree(void* memptr);
+}
 
 double angle(vec2 v1, vec2 v2) {
     return acos(dot(normalize(v1), normalize(v2)));
@@ -69,11 +78,16 @@ class CAT {
                << "<title>Collection of Geometry</title>" << endl;
                */
             // points
-            ss << "<circle cx=\"" << i.x << "\" cy=\"" << i.y << "\" r=\"5\"/>" << endl;
-            ss << "<circle cx=\"" << j.x << "\" cy=\"" << j.y << "\" r=\"5\"/>" << endl;
-            ss << "<circle cx=\"" << k.x << "\" cy=\"" << k.y << "\" r=\"5\"/>" << endl;
+            ss << "<circle cx=\"" << i.x << "\" cy=\"" << i.y << "\" r=\"2\"/>" << endl;
+            ss << "<circle cx=\"" << j.x << "\" cy=\"" << j.y << "\" r=\"2\"/>" << endl;
+            ss << "<circle cx=\"" << k.x << "\" cy=\"" << k.y << "\" r=\"2\"/>" << endl;
             // arcs
-            ss << to_arc(i, j, a_ij) << endl << to_arc(j, k, a_jk) << endl << to_arc(k, i, a_ki) << endl;
+            ss << to_arc(i, j, a_ij) << endl 
+                << to_arc(j, k, a_jk) << endl 
+                << to_arc(k, i, a_ki) << endl;
+            ss << to_subdiv(i, j, a_ij,10) 
+                << endl << to_subdiv(j, k, a_jk,10) << endl 
+                << to_subdiv(k, i, a_ki, 10) << endl;
 
             // footer
             ss << "</svg>";
@@ -82,7 +96,7 @@ class CAT {
 
         }
         //overload for just sidelengths
-        CAT (double ij, double jk, double ki, double a1, double a2, double a3): a_ij(a1), a_jk(a2), a_ki(a3) {
+        CAT (double ij, double jk, double ki, double a1, double a2, double a3, bool normalize = false): a_ij(a1), a_jk(a2), a_ki(a3) {
             i = vec2(0, 0);
             j = vec2(ij, 0);
             double angle = acos((-jk*jk + ki*ki + ij*ij)/(2*ki*ij));
@@ -90,10 +104,11 @@ class CAT {
             std::vector<double> temp = {ij, jk, ki};
             double max_len = *std::max_element(temp.begin(), temp.end());
             dims = (max_len) * 3;
-            i = vec2 (dims/4, dims/4);
-            j += i;
-            k += i;
-
+            if(normalize) {
+                i = vec2 (dims/4, dims/4);
+                j += i;
+                k += i;
+            }
             /*
             if (normalize)
             {
@@ -118,11 +133,13 @@ class CAT {
             double max_coord = *std::max_element(temp.begin(), temp.end());
             double min_coord = *std::min_element(temp.begin(), temp.end());
             dims = (max_coord - min_coord) * 3;
-            j -= i;
-            k -= i;
-            i = vec2 (dims/4, dims/4);
-            j += i;
-            k += i;
+            if (normalize) {
+                j -= i;
+                k -= i;
+                i = vec2 (dims/4, dims/4);
+                j += i;
+                k += i;
+            }
 
             /*
             if (normalize)
@@ -148,35 +165,128 @@ class CAT {
             f.close();
             return;
         }
+        std::tuple<vector<double>,vector<int>> triangulation(int n) {
+            vector<double> pointList;
+            vector<double> pl1 = to_subdiv_vec(i, j, a_ij,n), 
+                pl2 = to_subdiv_vec(j, k, a_jk,n), 
+                pl3 = to_subdiv_vec(k, i, a_ki, n);
+            pointList.insert( pointList.end(), pl1.begin(), pl1.end() );
+            pointList.insert( pointList.end(), pl2.begin(), pl2.end() );
+            pointList.insert( pointList.end(), pl3.begin(), pl3.end() );
 
-    private:
-        int dims;
-        string to_arc(vec2 a, vec2 b, double angle) {
-            double radius = glm::distance(a, b) / (2 * angle);
-            string largeArcFlag = std::abs(2*angle) <= 3.14159265358979323846264 ? "0" : "1";
-            // sweep flag is 0 if going outward, 1 if going inward
-            string sweepFlag = angle < 0 ? "0" : "1";
+            vector<int> edgeList = {0};
+            for (int i = 1; i < 3*n; i++) {
+                edgeList.push_back(i);
+                edgeList.push_back(i);
+            }
+            edgeList.push_back(0);
+            triangulateio t = {
+                pointList.data(),
+                NULL, //pointattributelist;
+                NULL, //int *pointmarkerlist; 
+                3*n, // number of points
+                0, //numberofpointattributes;
+                NULL, //int *trianglelist;                                             /* In / out */
+                NULL,//double *triangleattributelist;                                   /* In / out */
+                NULL,//double *trianglearealist;                                         /* In only */
+                NULL,//int *neighborlist;                                             /* Out only */
+                0,//int numberoftriangles;                                         /* In / out */
+                0,//int numberofcorners;                                           /* In / out */
+                0,//int numberoftriangleattributes;                                /* In / out */
+
+                edgeList.data(),//int *segmentlist;                                              /* In / out */
+                NULL,//int *segmentmarkerlist;                                        /* In / out */
+                n,//int numberofsegments;                                          /* In / out */
+
+                NULL,//double *holelist;                        /* In / pointer to array copied out */
+                0,//int numberofholes;                                      /* In / copied out */
+
+                NULL,//double *regionlist;                      /* In / pointer to array copied out */
+                0,//int numberofregions;                                    /* In / copied out */
+
+                NULL,//int *edgelist;                                                 /* Out only */
+                NULL,//int *edgemarkerlist;            /* Not used with Voronoi diagram; out only */
+                NULL,//double *normlist;                /* Used only with Voronoi diagram; out only */
+                0, //int numberofedges;                                             /* Out only */
+            };
+            triangulateio out = {};
+            triangulate((char*)"z", &t, &out, NULL);
+            vector<double> finalPoints (out.pointlist, out.pointlist + 2 * out.numberofpoints);
+            vector<int> triangles (out.trianglelist, out.trianglelist + 3 * out.numberoftriangles);
+            //trifree(&out);
+            return std::make_pair(finalPoints,triangles);
+        }
+        string triangulation_svg(int n) {
+            // header
             std::stringstream ss;
-            ss << "<path d=\"M" << a.x << "," << a.y << " A" << radius << "," 
-                << radius << " 0 " <<  largeArcFlag << " " << sweepFlag << " " 
-                << b.x << "," << b.y << "\" fill=\"red\" stroke=\"blue\" stroke-width=\"5\" />"; 
+            ss << "<?xml version=\"1.0\" standalone=\"no\" ?>" << endl
+                << "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">" << endl
+                << "<svg width=\"" + std::to_string(dims) + "\" height=\"" + std::to_string(dims) + "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" >" << endl;
+            vector<double> finalPoints;
+            vector<int> triangles;
+            std::tie(finalPoints, triangles) = triangulation(n);
+            for (int i = 0; i < triangles.size()/3; i++) {
+                ss << "<path d=\"M" << finalPoints[2*triangles[3*i]] << " " << finalPoints[2*triangles[3*i] + 1] << " "
+                 << "L" << finalPoints[2*triangles[3*i + 1]] << " " << finalPoints[2*triangles[3*i + 1] + 1] << " "
+                 << "L" << finalPoints[2*triangles[3*i + 2]] << " " << finalPoints[2*triangles[3*i + 2] + 1] << " Z"
+                 <<  "\" fill=\"none\" stroke=\"green\" stroke-width=\"1\" />"; 
+            }
+            
+            // footer
+            ss << "</svg>";
 
             return ss.str();
 
         }
+    private:
+        int dims;
+        string to_arc(vec2 a, vec2 b, double angle) {
+            double radius = glm::distance(a, b) / abs(2 * sin(angle));
+            string largeArcFlag = std::abs(2*angle) <= 3.14159265358979323846264 ? "0" : "1";
+            // sweep flag is 1 if going outward, 0 if going inward
+            string sweepFlag = angle >= 0 ? "0" : "1";
+            std::stringstream ss;
+            ss << "<path d=\"M" << a.x << "," << a.y << " A" << radius << "," 
+                << radius << " 0 " <<  largeArcFlag << " " << sweepFlag << " " 
+                << b.x << "," << b.y << "\" fill=\"red\" stroke=\"green\" stroke-width=\"1\" />"; 
+            return ss.str();
+
+        }
+        vector<double> to_subdiv_vec(vec2 a, vec2 b, double angle, int n) {
+            double radius = glm::distance(a, b) / abs(2 * sin(angle));
+            vector<double> pts;
+            vec2 c = center(a, b, angle);
+            double theta = atan2(a.y-c.y, a.x-c.x);
+            for (int i = 0; i < n; i++) {
+                pts.push_back(c.x + cos(theta - 2*i * angle/n) * radius);
+                pts.push_back(c.y + sin(theta - 2*i * angle/n) * radius);
+            }
+            return pts;
+        }
+        string to_subdiv(vec2 a, vec2 b, double angle, int n) {
+            double radius = glm::distance(a, b) / abs(2 * sin(angle));
+            std::stringstream ss;
+            ss << "<path d=\"M" << a.x << " " << a.y << " ";
+            vec2 c = center(a, b, angle);
+            double theta = atan2(a.y-c.y, a.x-c.x);
+            for (int i = 1; i < n; i++) {
+                ss << "L" << c.x + cos(theta - 2*i * angle/n) * radius  << " " 
+                    << c.y + sin(theta - 2*i * angle/n) * radius<< " ";
+            }
+            ss <<  "\" fill=\"none\" stroke=\"green\" stroke-width=\"1\" />"; 
+            //ss << "<circle cx=\"" << c.x << "\" cy=\"" << c.y << "\" r=\"2\"/>";
+            return ss.str();
+        }
         vec2 center(vec2 a, vec2 b, double angle) {
-            // |b-a| = 2 alpha r, so radius = |b-a| / 2aalpha
-            double radius = glm::distance(a, b) / (2 * angle);
+            // |b-a| = 2 sin(alpha) r, so radius = |b-a| / 2 sin(alpha)
+            double radius = glm::distance(a, b) / abs(2 * sin(angle));
             vec2 diff = b - a;
             // counterclockwise rotation by 90 degrees
             vec2 offset = vec2(-diff.y, diff.x);
-            if (angle <= 0)
-            {
-                offset *= radius/glm::length(diff);
-            }
-            else
-            {
-                offset *= -radius/glm::length(diff);
+            if (angle <= 0) {
+                offset *= cos(angle) * radius/glm::length(diff);
+            } else {
+                offset *= - cos(angle) * radius/glm::length(diff);
             }
             return (a + b)/2.f + offset;
         }
@@ -215,8 +325,7 @@ vec3 SphericalBary(vec3 p, S2Triangle T) {
     double u = abs(SphericalArea(T.j, T.k, p) / T.area);
     double v = abs(SphericalArea(T.i, T.k, p) / T.area);
     double w = abs(SphericalArea(T.i, T.j, p) / T.area);
-    if (u + v + w > 1.01)
-    {
+    if (u + v + w > 1.01) {
         return vec3(1., 1., 1.);
     }
     return vec3(u, v, w);
