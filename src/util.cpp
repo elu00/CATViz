@@ -109,19 +109,6 @@ class CAT {
                 j += i;
                 k += i;
             }
-            /*
-            if (normalize)
-            {
-                std::vector<double> temp = {ij, jk, ki};
-                double max_len = *std::max_element(temp.begin(), temp.end());
-                // rescale
-                j *= 125 / max_len;
-                k *= 125 / max_len;
-                i = vec2 (250, 250);
-                j += i;
-                k += i;
-            }
-            */
         }
         // overload for specifying coordinates
         CAT (double i1, double i2, double j1, double j2, double k1, double k2, double a1, double a2, double a3, bool normalize = false): a_ij(a1), a_jk(a2), a_ki(a3) {
@@ -140,24 +127,6 @@ class CAT {
                 j += i;
                 k += i;
             }
-
-            /*
-            if (normalize)
-            {
-                dims = 500;
-                std::vector<double> temp = {i1, i2, j1, j2, k1, k2};
-                double max_coord = *std::max_element(temp.begin(), temp.end());
-                // move
-                j -= i;
-                k -= i;
-                // rescale
-                j *= 125 / max_coord;
-                k *= 125 / max_coord;
-                i = vec2 (250, 250);
-                j += i;
-                k += i;
-            }
-            */
         }
         void to_svg(string filename) {
             std::ofstream f (filename, std::ofstream::out);
@@ -173,7 +142,7 @@ class CAT {
             pointList.insert( pointList.end(), pl1.begin(), pl1.end() );
             pointList.insert( pointList.end(), pl2.begin(), pl2.end() );
             pointList.insert( pointList.end(), pl3.begin(), pl3.end() );
-
+            vector<int> pointMarkerList (n,1);
             vector<int> edgeList = {0};
             for (int i = 1; i < 3*n; i++) {
                 edgeList.push_back(i);
@@ -183,7 +152,7 @@ class CAT {
             triangulateio t = {
                 pointList.data(),
                 NULL, //pointattributelist;
-                NULL, //int *pointmarkerlist; 
+                pointMarkerList.data(), //int *pointmarkerlist; 
                 3*n, // number of points
                 0, //numberofpointattributes;
                 NULL, //int *trianglelist;                                             /* In / out */
@@ -196,7 +165,7 @@ class CAT {
 
                 edgeList.data(),//int *segmentlist;                                              /* In / out */
                 NULL,//int *segmentmarkerlist;                                        /* In / out */
-                n,//int numberofsegments;                                          /* In / out */
+                3*n,//int numberofsegments;                                          /* In / out */
 
                 NULL,//double *holelist;                        /* In / pointer to array copied out */
                 0,//int numberofholes;                                      /* In / copied out */
@@ -210,7 +179,7 @@ class CAT {
                 0, //int numberofedges;                                             /* Out only */
             };
             triangulateio out = {};
-            triangulate((char*)"z", &t, &out, NULL);
+            triangulate((char*)"pzYq", &t, &out, NULL);
             vector<double> finalPoints (out.pointlist, out.pointlist + 2 * out.numberofpoints);
             vector<int> triangles (out.trianglelist, out.trianglelist + 3 * out.numberoftriangles);
             //trifree(&out);
@@ -244,13 +213,12 @@ class CAT {
             double radius = glm::distance(a, b) / abs(2 * sin(angle));
             string largeArcFlag = std::abs(2*angle) <= 3.14159265358979323846264 ? "0" : "1";
             // sweep flag is 1 if going outward, 0 if going inward
-            string sweepFlag = angle >= 0 ? "0" : "1";
+            string sweepFlag = angle < 0 ? "0" : "1";
             std::stringstream ss;
             ss << "<path d=\"M" << a.x << "," << a.y << " A" << radius << "," 
                 << radius << " 0 " <<  largeArcFlag << " " << sweepFlag << " " 
                 << b.x << "," << b.y << "\" fill=\"red\" stroke=\"green\" stroke-width=\"1\" />"; 
             return ss.str();
-
         }
         vector<double> to_subdiv_vec(vec2 a, vec2 b, double angle, int n) {
             double radius = glm::distance(a, b) / abs(2 * sin(angle));
@@ -258,8 +226,8 @@ class CAT {
             vec2 c = center(a, b, angle);
             double theta = atan2(a.y-c.y, a.x-c.x);
             for (int i = 0; i < n; i++) {
-                pts.push_back(c.x + cos(theta - 2*i * angle/n) * radius);
-                pts.push_back(c.y + sin(theta - 2*i * angle/n) * radius);
+                pts.push_back(c.x + cos(theta + 2*i * angle/n) * radius);
+                pts.push_back(c.y + sin(theta + 2*i * angle/n) * radius);
             }
             return pts;
         }
@@ -270,8 +238,8 @@ class CAT {
             vec2 c = center(a, b, angle);
             double theta = atan2(a.y-c.y, a.x-c.x);
             for (int i = 1; i < n; i++) {
-                ss << "L" << c.x + cos(theta - 2*i * angle/n) * radius  << " " 
-                    << c.y + sin(theta - 2*i * angle/n) * radius<< " ";
+                ss << "L" << c.x + cos(theta + 2*i * angle/n) * radius  << " " 
+                    << c.y + sin(theta + 2*i * angle/n) * radius<< " ";
             }
             ss <<  "\" fill=\"none\" stroke=\"green\" stroke-width=\"1\" />"; 
             //ss << "<circle cx=\"" << c.x << "\" cy=\"" << c.y << "\" r=\"2\"/>";
@@ -284,9 +252,9 @@ class CAT {
             // counterclockwise rotation by 90 degrees
             vec2 offset = vec2(-diff.y, diff.x);
             if (angle <= 0) {
-                offset *= cos(angle) * radius/glm::length(diff);
+                offset *= -cos(angle) * radius/glm::length(diff);
             } else {
-                offset *= - cos(angle) * radius/glm::length(diff);
+                offset *= cos(angle) * radius/glm::length(diff);
             }
             return (a + b)/2.f + offset;
         }
