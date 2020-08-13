@@ -209,6 +209,9 @@ public:
 
         return ss.str();
     }
+    //default initializer to make stuff play nice
+    CAT() {
+    }
     //overload for just sidelengths
     CAT(double ij, double jk, double ki, double a1, double a2, double a3, bool normalize = false) : a_ij(a1), a_jk(a2), a_ki(a3) {
         i = vec2(0, 0);
@@ -293,7 +296,7 @@ public:
             0,    //int numberofedges;             
         };
         triangulateio out = {};
-        triangulate((char *)"pzYq", &t, &out, NULL);
+        triangulate((char *)"pzYqQ", &t, &out, NULL);
         vector<double> finalPoints(out.pointlist, out.pointlist + 2 * out.numberofpoints);
         vector<int> triangles(out.trianglelist, out.trianglelist + 3 * out.numberoftriangles);
         //trifree(&out);
@@ -396,6 +399,7 @@ private:
                 pts.push_back((i/n) * a.x + ((n-i)/n) * b.x);
                 pts.push_back((i/n) * a.y + ((n-i)/n) * b.y);
             }
+            return pts;
         } else {
             double radius = glm::distance(a, b) / abs(2 * sin(angle));
             vec2 c = center(a, b, angle);
