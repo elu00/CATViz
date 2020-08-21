@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="600" height="600" xmlns="http://www.w3.org/2000/svg" version="1.1" >
+<circle cx="150" cy="150" r="2"/>
+<circle cx="350" cy="150" r="2"/>
+<circle cx="237" cy="232.65" r="2"/>
+<path d="M150,150 A1001.67,1001.67 0 0 1 350,150" fill="red" stroke="green" stroke-width="1" />
+<path d="M350,150 A123.972,123.972 0 0 0 237,232.65" fill="red" stroke="green" stroke-width="1" />
+<path d="M237,232.65 A302.009,302.009 0 0 0 150,150" fill="red" stroke="green" stroke-width="1" />
+<path d="M150 150 L169.952 148.199 L189.936 146.798 L209.944 145.797 L229.968 145.196 L250 144.996 L270.032 145.196 L290.056 145.797 L310.064 146.798 L330.048 148.199 " fill="none" stroke="green" stroke-width="1" />
+<path d="M350 150 L335.194 151.359 L320.658 154.48 L306.6 159.319 L293.222 165.806 L280.717 173.847 L269.264 183.329 L259.029 194.112 L250.159 206.044 L242.78 218.952 " fill="none" stroke="green" stroke-width="1" />
+<path d="M237 232.65 L229.873 222.897 L222.362 213.436 L214.479 204.284 L206.236 195.454 L197.646 186.96 L188.724 178.817 L179.483 171.038 L169.939 163.634 L160.106 156.617 " fill="none" stroke="green" stroke-width="1" />
+</svg>

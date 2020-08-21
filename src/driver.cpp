@@ -56,9 +56,19 @@ void BaryTests() {
     //cout << l2DistSquared(5 * sqrt(2), 5, 5, -1e-2, -1e-2, -1e-2, 0.7, 0, 0.3, 0.2, 0.5, 0.3) << endl;
     cout << l2DistSquared(12.322, 2.6971, 10.4546, 0.417028, 0.423979, 0.26072, 0, 0, 0, 0, 0, 0) << endl;
 }
-int main()
-{
-    BaryTests();
+int main() {
+    //SVGTests();
+    CAT triangle = CAT(200, 140, 120, 0.1, -0.6, -0.2, true);
+    triangle.to_svg("orig.svg");
+    std::ofstream f ("tri.svg", std::ofstream::out);
+    f << triangle.triangulation_svg(5);
+    f.close();
+    vector<double> finalPoints;
+    vector<int> triangles;
+    std::tie(finalPoints, triangles) = triangle.triangulation(5);
+    for (int i = 0; i < finalPoints.size()/2; i++) {
+        cout << glm::to_string(triangle.planeToBary(vec2(finalPoints[2*i], finalPoints[2*i+1]))) << endl;
+    }
     return 0;
 }
 
